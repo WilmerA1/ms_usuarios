@@ -1,9 +1,9 @@
-class UserController {
+export class UserController {
   constructor(userService) {
     this.userService = userService;
   }
 
-  async register(req, res) {
+  async registerUser(req, res) {
     try {
       const { name, email, password } = req.body;
 
@@ -35,11 +35,11 @@ class UserController {
         });
       }
 
-      const user = await this.userService.register(name, email, password);
+      const user = await this.userService.registerUser({ name, email, password });
 
       return res.status(201).json({
-        message: 'User registered successfully',
-        user: user.toJSON()
+        message: 'User registered successfully',            
+        user: user.toJSON ? user.toJSON() : user
       });
     } catch (error) {
       return res.status(500).json({
@@ -49,7 +49,7 @@ class UserController {
     }
   }
 
-  async login(req, res) {
+  async loginUser(req, res) {
     try {
       const { email, password } = req.body;
 
@@ -74,15 +74,14 @@ class UserController {
         });
       }
 
-      const result = await this.userService.login(email, password);
+      const activeUser = await this.userService.loginUser({ email, password });
 
       return res.status(200).json({
         message: 'Login successful',
-        user: result.user.toJSON(),
-        token: result.token
+        user: activeUser
       });
     } catch (error) {
-      if (error.message === 'Invalid credentials') {
+      if (error.message === 'Invalid email or password') {
         return res.status(401).json({
           error: 'Authentication error',
           message: 'Invalid email or password'
@@ -96,5 +95,3 @@ class UserController {
     }
   }
 }
-
-module.exports = UserController;

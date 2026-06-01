@@ -1,10 +1,12 @@
 {
   "name": "ms_usuarios",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Microservicio de gestión de usuarios",
+  "main": "src/app.js",
   "type": "module",
   "scripts": {
+    "dev": "node src/app.js",
+    "start": "node src/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",

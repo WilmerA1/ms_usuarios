@@ -1,9 +1,9 @@
-class User {
-  constructor(id, name, email, password, rating = 0) {
+export class User {
+  constructor(id, name, email, password, rating = 5.0) { 
     this.id = id;
     this.name = name;
     this.email = email;
-    this.password = password;
+    this.passwordHash = password; 
     this.rating = rating;
     this.initials = this.#generateInitials(name);
   }
@@ -18,7 +18,7 @@ class User {
       .split(/\s+/)
       .map(word => word.charAt(0).toUpperCase())
       .join('')
-      .slice(0, 3);
+      .slice(0, 2);
   }
 
   toJSON() {
@@ -31,5 +31,3 @@ class User {
     };
   }
 }
-
-module.exports = User;

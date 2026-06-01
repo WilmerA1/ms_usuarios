@@ -1,4 +1,4 @@
-class UserRepository {
+export class UserRepository {
   async save(user) {
     throw new Error('Not implemented: save() method must be implemented by adapter');
   }
@@ -23,5 +23,3 @@ class UserRepository {
     throw new Error('Not implemented: delete() method must be implemented by adapter');
   }
 }
-
-module.exports = UserRepository;
