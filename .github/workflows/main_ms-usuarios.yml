@@ -52,4 +52,4 @@ jobs:
           app-name: 'ms-usuarios'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_53504BCF0C1E4ABE9BE1271229EF65AF }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DFDE4767265F4E5292F4BEAF43FA7662 }}
