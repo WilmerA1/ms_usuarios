@@ -1,10 +1,11 @@
 export class User {
-  constructor(id, name, email, password, rating = 5.0) { 
+  constructor(id, name, email, password, rating = 5.0, university = 'No especificada') {
     this.id = id;
     this.name = name;
     this.email = email;
-    this.passwordHash = password; 
+    this.passwordHash = password;
     this.rating = rating;
+    this.university = university;
     this.initials = this.#generateInitials(name);
   }
 
@@ -31,6 +32,7 @@ export class User {
       id: this.id,
       name: this.name,
       email: this.email,
+      university: this.university,
       initials: this.initials,
       rating: this.rating
     };

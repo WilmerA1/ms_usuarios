@@ -26,16 +26,17 @@ export class UserSQLAdapter {
         try {
             const connection = await this._getConnection();
             const request = connection.request();
-        
+
             request.input('id', sql.VarChar(36), user.id);
             request.input('name', sql.VarChar(100), user.name);
             request.input('email', sql.VarChar(150), user.email);
             request.input('password_hash', sql.VarChar(255), user.passwordHash);
             request.input('initials', sql.VarChar(5), user.initials);
+            request.input('university', sql.VarChar(255), user.university ?? 'No especificada');
 
             const query = `
-                INSERT INTO Users (id, name, email, password_hash, initials)
-                VALUES (@id, @name, @email, @password_hash, @initials)
+                INSERT INTO Users (id, name, email, password_hash, initials, university)
+                VALUES (@id, @name, @email, @password_hash, @initials, @university)
             `;
             await request.query(query);
             return user;
@@ -51,8 +52,8 @@ export class UserSQLAdapter {
             const request = connection.request();
 
             request.input('email', sql.VarChar(150), email);
-            const query = `SELECT id, name, email, password_hash, initials, rating FROM Users WHERE email = @email`;
-            
+            const query = `SELECT id, name, email, password_hash, initials, rating, university FROM Users WHERE email = @email`;
+
             const result = await request.query(query);
             if (result.recordset.length === 0) return null;
 
@@ -63,7 +64,8 @@ export class UserSQLAdapter {
                 email: row.email,
                 passwordHash: row.password_hash,
                 initials: row.initials,
-                rating: parseFloat(row.rating)
+                rating: parseFloat(row.rating),
+                university: row.university ?? 'No especificada'
             };
         } catch (error) {
             console.error('Error en UserSQLAdapter.findByEmail:', error.message);

@@ -5,15 +5,15 @@ export class UserService {
         this.userRepository = userRepository;
     }
 
-    async registerUser({ name, email, password }) {        
+    async registerUser({ name, email, password, university = 'No especificada' }) {
         const existingUser = await this.userRepository.findByEmail(email);
         if (existingUser) {
             throw new Error('Email is already registered');
         }
 
-        const id = crypto.randomUUID(); 
-        const newUser = new User(id, name, email, password); 
-        
+        const id = crypto.randomUUID();
+        const newUser = new User(id, name, email, password, 5.0, university);
+
         return await this.userRepository.save(newUser);
     }
 
@@ -31,6 +31,7 @@ export class UserService {
             id: user.id,
             name: user.name,
             email: user.email,
+            university: user.university ?? 'No especificada',
             initials: user.initials,
             rating: user.rating
         };

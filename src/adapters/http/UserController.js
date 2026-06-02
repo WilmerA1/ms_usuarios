@@ -5,7 +5,7 @@ export class UserController {
 
   async registerUser(req, res) {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, university } = req.body;
 
       if (!name || !email || !password) {
         return res.status(400).json({
@@ -35,7 +35,7 @@ export class UserController {
         });
       }
 
-      const user = await this.userService.registerUser({ name, email, password });
+      const user = await this.userService.registerUser({ name, email, password, university });
 
       return res.status(201).json({
         message: 'User registered successfully',            
