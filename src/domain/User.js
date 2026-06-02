@@ -13,12 +13,17 @@ export class User {
       return '';
     }
 
-    return name
-      .trim()
-      .split(/\s+/)
-      .map(word => word.charAt(0).toUpperCase())
-      .join('')
-      .slice(0, 2);
+    const trimmedName = name.trim();
+  
+    if (trimmedName.includes(' ')) {
+      return trimmedName
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase())
+        .join('')
+        .slice(0, 2);
+    } else {
+      return trimmedName.substring(0, 2).toUpperCase();
+    }
   }
 
   toJSON() {
