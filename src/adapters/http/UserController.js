@@ -49,6 +49,38 @@ export class UserController {
     }
   }
 
+  async getUserById(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id || typeof id !== 'string' || id.trim() === '') {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'User id is required'
+        });
+      }
+
+      const user = await this.userService.getUserById(id.trim());
+
+      return res.status(200).json({
+        message: 'User retrieved successfully',
+        user
+      });
+    } catch (error) {
+      if (error.message === 'User not found') {
+        return res.status(404).json({
+          error: 'Not found',
+          message: `No user exists with id '${req.params.id}'`
+        });
+      }
+
+      return res.status(500).json({
+        error: 'Internal server error',
+        message: error.message
+      });
+    }
+  }
+
   async loginUser(req, res) {
     try {
       const { email, password } = req.body;

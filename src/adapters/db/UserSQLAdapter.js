@@ -46,6 +46,33 @@ export class UserSQLAdapter {
         }
     }
 
+    async findById(id) {
+        try {
+            const connection = await this._getConnection();
+            const request = connection.request();
+
+            request.input('id', sql.VarChar(36), id);
+            const query = `SELECT id, name, email, password_hash, initials, rating, university FROM Users WHERE id = @id`;
+
+            const result = await request.query(query);
+            if (result.recordset.length === 0) return null;
+
+            const row = result.recordset[0];
+            return {
+                id: row.id,
+                name: row.name,
+                email: row.email,
+                passwordHash: row.password_hash,
+                initials: row.initials,
+                rating: parseFloat(row.rating),
+                university: row.university ?? 'No especificada'
+            };
+        } catch (error) {
+            console.error('Error en UserSQLAdapter.findById:', error.message);
+            throw new Error('Database query failure');
+        }
+    }
+
     async findByEmail(email) {
         try {
             const connection = await this._getConnection();

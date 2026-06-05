@@ -17,6 +17,22 @@ export class UserService {
         return await this.userRepository.save(newUser);
     }
 
+    async getUserById(id) {
+        const user = await this.userRepository.findById(id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            university: user.university ?? 'No especificada',
+            initials: user.initials,
+            rating: user.rating
+        };
+    }
+
     async loginUser({ email, password }) {
         const user = await this.userRepository.findByEmail(email);
         if (!user) {
