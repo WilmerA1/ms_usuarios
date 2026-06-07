@@ -5,10 +5,10 @@ export class UserSQLAdapter {
         this.dbConfig = {
             user: config.dbUser,
             password: config.dbPassword,
-            server: config.dbServer, 
+            server: config.dbServer,
             database: config.dbName,
             options: {
-                encrypt: true, 
+                encrypt: true,
                 trustServerCertificate: false
             }
         };
@@ -97,6 +97,75 @@ export class UserSQLAdapter {
         } catch (error) {
             console.error('Error en UserSQLAdapter.findByEmail:', error.message);
             throw new Error('Database query failure');
+        }
+    }
+
+    // ── Reviews ───────────────────────────────────────────────────────────────
+
+    async saveReview(review) {
+        try {
+            const connection = await this._getConnection();
+            const request = connection.request();
+
+            request.input('id', sql.VarChar(36), review.id);
+            request.input('userId', sql.VarChar(36), review.userId);
+            request.input('reviewerName', sql.VarChar(100), review.reviewerName);
+            request.input('text', sql.VarChar(500), review.text);
+            request.input('stars', sql.Int, review.stars);
+
+            const query = `
+                INSERT INTO UserReviews (id, userId, reviewerName, text, stars)
+                VALUES (@id, @userId, @reviewerName, @text, @stars)
+            `;
+            await request.query(query);
+            return review;
+        } catch (error) {
+            console.error('Error en UserSQLAdapter.saveReview:', error.message);
+            throw new Error('Database persistence failure');
+        }
+    }
+
+    async findReviewsByUserId(userId) {
+        try {
+            const connection = await this._getConnection();
+            const request = connection.request();
+
+            request.input('userId', sql.VarChar(36), userId);
+            const query = `
+                SELECT id, userId, reviewerName, text, stars, createdAt
+                FROM UserReviews
+                WHERE userId = @userId
+                ORDER BY createdAt DESC
+            `;
+
+            const result = await request.query(query);
+            return result.recordset.map(row => ({
+                id: row.id,
+                userId: row.userId,
+                reviewerName: row.reviewerName,
+                text: row.text,
+                stars: row.stars,
+                createdAt: row.createdAt
+            }));
+        } catch (error) {
+            console.error('Error en UserSQLAdapter.findReviewsByUserId:', error.message);
+            throw new Error('Database query failure');
+        }
+    }
+
+    async updateRating(userId, newRating) {
+        try {
+            const connection = await this._getConnection();
+            const request = connection.request();
+
+            request.input('userId', sql.VarChar(36), userId);
+            request.input('rating', sql.Float, newRating);
+
+            const query = `UPDATE Users SET rating = @rating WHERE id = @userId`;
+            await request.query(query);
+        } catch (error) {
+            console.error('Error en UserSQLAdapter.updateRating:', error.message);
+            throw new Error('Database update failure');
         }
     }
 }

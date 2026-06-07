@@ -38,7 +38,7 @@ export class UserController {
       const user = await this.userService.registerUser({ name, email, password, university });
 
       return res.status(201).json({
-        message: 'User registered successfully',            
+        message: 'User registered successfully',
         user: user.toJSON ? user.toJSON() : user
       });
     } catch (error) {
@@ -117,6 +117,80 @@ export class UserController {
         return res.status(401).json({
           error: 'Authentication error',
           message: 'Invalid email or password'
+        });
+      }
+
+      return res.status(500).json({
+        error: 'Internal server error',
+        message: error.message
+      });
+    }
+  }
+
+  // ── Reviews ─────────────────────────────────────────────────────────────────
+
+  async addReview(req, res) {
+    try {
+      const { id } = req.params;
+      const { reviewerName, text, stars } = req.body;
+
+      if (!id || typeof id !== 'string' || id.trim() === '') {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'User id is required'
+        });
+      }
+
+      if (!stars || isNaN(parseInt(stars))) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'stars is required and must be a number'
+        });
+      }
+
+      const review = await this.userService.addReview(id.trim(), { reviewerName, text, stars });
+
+      return res.status(201).json({
+        message: 'Review created successfully',
+        review
+      });
+    } catch (error) {
+      if (error.message === 'User not found') {
+        return res.status(404).json({
+          error: 'Not found',
+          message: `No user exists with id '${req.params.id}'`
+        });
+      }
+
+      return res.status(500).json({
+        error: 'Internal server error',
+        message: error.message
+      });
+    }
+  }
+
+  async getReviews(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id || typeof id !== 'string' || id.trim() === '') {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'User id is required'
+        });
+      }
+
+      const reviews = await this.userService.getReviews(id.trim());
+
+      return res.status(200).json({
+        message: 'Reviews retrieved successfully',
+        reviews
+      });
+    } catch (error) {
+      if (error.message === 'User not found') {
+        return res.status(404).json({
+          error: 'Not found',
+          message: `No user exists with id '${req.params.id}'`
         });
       }
 

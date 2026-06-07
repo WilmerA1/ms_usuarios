@@ -1,4 +1,4 @@
-import { User } from '../domain/User.js'; 
+import { User } from '../domain/User.js';
 
 export class UserService {
     constructor(userRepository) {
@@ -51,5 +51,41 @@ export class UserService {
             initials: user.initials,
             rating: user.rating
         };
+    }
+
+    // ── Reviews ───────────────────────────────────────────────────────────────
+
+    async addReview(userId, { reviewerName, text, stars }) {
+        // Verificar que el usuario existe
+        const user = await this.userRepository.findById(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const review = {
+            id: crypto.randomUUID(),
+            userId,
+            reviewerName: reviewerName || 'Usuario',
+            text: text || '',
+            stars: Math.min(5, Math.max(1, parseInt(stars) || 5)),
+        };
+
+        await this.userRepository.saveReview(review);
+
+        // Recalcular el rating promedio del usuario
+        const allReviews = await this.userRepository.findReviewsByUserId(userId);
+        const avg = allReviews.reduce((sum, r) => sum + r.stars, 0) / allReviews.length;
+        await this.userRepository.updateRating(userId, Math.round(avg * 10) / 10);
+
+        return review;
+    }
+
+    async getReviews(userId) {
+        const user = await this.userRepository.findById(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        return await this.userRepository.findReviewsByUserId(userId);
     }
 }
