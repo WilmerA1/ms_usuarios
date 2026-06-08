@@ -5,8 +5,7 @@ import cors from 'cors';
 import { UserSQLAdapter } from './adapters/db/UserSQLAdapter.js';
 import { UserController } from './adapters/http/UserController.js';
 import { createRoutes } from './adapters/http/routes.js';
-import { UserService } from './application/UserService.js';
-import { FirebaseAuthAdapter } from './adapters/auth/FirebaseAuthAdapter.js';
+import { UserService } from './application/UserService.js'; 
 
 const app = express();
 app.use(express.json());
@@ -21,14 +20,13 @@ const dbConfig = {
 
 const userRepository = new UserSQLAdapter(dbConfig);
 const userService = new UserService(userRepository);
-const firebaseAuth = new FirebaseAuthAdapter();
-const userController = new UserController(userService, firebaseAuth);
+const userController = new UserController(userService);
 
-app.use('/api/v1/users', createRoutes(userController, firebaseAuth));
+app.use('/api/v1/users', createRoutes(userController));
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-    console.log(`[ms_usuarios] escuchando en puerto ${PORT}`);
+    console.log(`[ms_usuarios] escuchando en puerto ${PORT} y conectado a Azure SQL`);
 });
 
 export default app;

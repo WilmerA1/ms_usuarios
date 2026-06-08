@@ -1,7 +1,6 @@
 export class UserController {
-  constructor(userService, firebaseAuth) {
+  constructor(userService) {
     this.userService = userService;
-    this.firebaseAuth = firebaseAuth;
   }
 
   async registerUser(req, res) {
@@ -36,29 +35,13 @@ export class UserController {
         });
       }
 
-      // 1. Crear usuario en Firebase Auth
-      const fbUser = await this.firebaseAuth.createUser(email, password);
-
-      // 2. Crear perfil en la base de datos usando el uid de Firebase
-      const user = await this.userService.registerUser({
-        firebaseUid: fbUser.uid,
-        name,
-        email,
-        university
-      });
+      const user = await this.userService.registerUser({ name, email, password, university });
 
       return res.status(201).json({
         message: 'User registered successfully',
         user: user.toJSON ? user.toJSON() : user
       });
     } catch (error) {
-      // Firebase lanza este código si el email ya existe
-      if (error.code === 'auth/email-already-exists') {
-        return res.status(409).json({
-          error: 'Conflict',
-          message: 'Email is already registered'
-        });
-      }
       return res.status(500).json({
         error: 'Internal server error',
         message: error.message
@@ -90,6 +73,53 @@ export class UserController {
           message: `No user exists with id '${req.params.id}'`
         });
       }
+
+      return res.status(500).json({
+        error: 'Internal server error',
+        message: error.message
+      });
+    }
+  }
+
+  async loginUser(req, res) {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'email and password are required'
+        });
+      }
+
+      if (typeof email !== 'string' || !email.includes('@')) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'email must be a valid email address'
+        });
+      }
+
+      if (typeof password !== 'string' || password === '') {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'password cannot be empty'
+        });
+      }
+
+      const activeUser = await this.userService.loginUser({ email, password });
+
+      return res.status(200).json({
+        message: 'Login successful',
+        user: activeUser
+      });
+    } catch (error) {
+      if (error.message === 'Invalid email or password') {
+        return res.status(401).json({
+          error: 'Authentication error',
+          message: 'Invalid email or password'
+        });
+      }
+
       return res.status(500).json({
         error: 'Internal server error',
         message: error.message
@@ -131,6 +161,7 @@ export class UserController {
           message: `No user exists with id '${req.params.id}'`
         });
       }
+
       return res.status(500).json({
         error: 'Internal server error',
         message: error.message
@@ -162,6 +193,7 @@ export class UserController {
           message: `No user exists with id '${req.params.id}'`
         });
       }
+
       return res.status(500).json({
         error: 'Internal server error',
         message: error.message
