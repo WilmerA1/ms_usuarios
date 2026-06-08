@@ -1,18 +1,69 @@
 export class UserController {
-  constructor(userService) {
+  constructor(userService, firebaseAuth) {
     this.userService = userService;
+    this.firebaseAuth = firebaseAuth;
   }
 
   async registerUser(req, res) {
-    const { name, email, password, university } = req.body;
-    
-    const fbUser = await this.firebaseAuth.createUser(email, password);
-    
-    const user = await this.userService.registerUser({
-      firebaseUid: fbUser.uid, name, email, university
-    });
+    try {
+      const { name, email, password, university } = req.body;
 
-    return res.status(201).json({ user: user.toJSON() });
+      if (!name || !email || !password) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'name, email and password are required'
+        });
+      }
+
+      if (typeof name !== 'string' || name.trim() === '') {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'name must be a non-empty string'
+        });
+      }
+
+      if (typeof email !== 'string' || !email.includes('@')) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'email must be a valid email address'
+        });
+      }
+
+      if (typeof password !== 'string' || password.length < 6) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'password must be at least 6 characters'
+        });
+      }
+
+      // 1. Crear usuario en Firebase Auth
+      const fbUser = await this.firebaseAuth.createUser(email, password);
+
+      // 2. Crear perfil en la base de datos usando el uid de Firebase
+      const user = await this.userService.registerUser({
+        firebaseUid: fbUser.uid,
+        name,
+        email,
+        university
+      });
+
+      return res.status(201).json({
+        message: 'User registered successfully',
+        user: user.toJSON ? user.toJSON() : user
+      });
+    } catch (error) {
+      // Firebase lanza este código si el email ya existe
+      if (error.code === 'auth/email-already-exists') {
+        return res.status(409).json({
+          error: 'Conflict',
+          message: 'Email is already registered'
+        });
+      }
+      return res.status(500).json({
+        error: 'Internal server error',
+        message: error.message
+      });
+    }
   }
 
   async getUserById(req, res) {
@@ -39,53 +90,6 @@ export class UserController {
           message: `No user exists with id '${req.params.id}'`
         });
       }
-
-      return res.status(500).json({
-        error: 'Internal server error',
-        message: error.message
-      });
-    }
-  }
-
-  async loginUser(req, res) {
-    try {
-      const { email, password } = req.body;
-
-      if (!email || !password) {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'email and password are required'
-        });
-      }
-
-      if (typeof email !== 'string' || !email.includes('@')) {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'email must be a valid email address'
-        });
-      }
-
-      if (typeof password !== 'string' || password === '') {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'password cannot be empty'
-        });
-      }
-
-      const activeUser = await this.userService.loginUser({ email, password });
-
-      return res.status(200).json({
-        message: 'Login successful',
-        user: activeUser
-      });
-    } catch (error) {
-      if (error.message === 'Invalid email or password') {
-        return res.status(401).json({
-          error: 'Authentication error',
-          message: 'Invalid email or password'
-        });
-      }
-
       return res.status(500).json({
         error: 'Internal server error',
         message: error.message
@@ -127,7 +131,6 @@ export class UserController {
           message: `No user exists with id '${req.params.id}'`
         });
       }
-
       return res.status(500).json({
         error: 'Internal server error',
         message: error.message
@@ -159,7 +162,6 @@ export class UserController {
           message: `No user exists with id '${req.params.id}'`
         });
       }
-
       return res.status(500).json({
         error: 'Internal server error',
         message: error.message
