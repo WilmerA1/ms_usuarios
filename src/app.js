@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './swagger.js';
 
 import { UserSQLAdapter } from './adapters/db/UserSQLAdapter.js';
 import { UserController } from './adapters/http/UserController.js';
@@ -23,6 +25,7 @@ const userService = new UserService(userRepository);
 const userController = new UserController(userService);
 
 app.use('/api/v1/users', createRoutes(userController));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
