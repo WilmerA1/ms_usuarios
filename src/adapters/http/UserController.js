@@ -4,49 +4,15 @@ export class UserController {
   }
 
   async registerUser(req, res) {
-    try {
-      const { name, email, password, university } = req.body;
+    const { name, email, password, university } = req.body;
+    
+    const fbUser = await this.firebaseAuth.createUser(email, password);
+    
+    const user = await this.userService.registerUser({
+      firebaseUid: fbUser.uid, name, email, university
+    });
 
-      if (!name || !email || !password) {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'name, email and password are required'
-        });
-      }
-
-      if (typeof name !== 'string' || name.trim() === '') {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'name must be a non-empty string'
-        });
-      }
-
-      if (typeof email !== 'string' || !email.includes('@')) {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'email must be a valid email address'
-        });
-      }
-
-      if (typeof password !== 'string' || password.length < 6) {
-        return res.status(400).json({
-          error: 'Validation error',
-          message: 'password must be at least 6 characters'
-        });
-      }
-
-      const user = await this.userService.registerUser({ name, email, password, university });
-
-      return res.status(201).json({
-        message: 'User registered successfully',
-        user: user.toJSON ? user.toJSON() : user
-      });
-    } catch (error) {
-      return res.status(500).json({
-        error: 'Internal server error',
-        message: error.message
-      });
-    }
+    return res.status(201).json({ user: user.toJSON() });
   }
 
   async getUserById(req, res) {

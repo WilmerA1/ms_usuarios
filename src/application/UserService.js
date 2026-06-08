@@ -5,16 +5,12 @@ export class UserService {
         this.userRepository = userRepository;
     }
 
-    async registerUser({ name, email, password, university = 'No especificada' }) {
-        const existingUser = await this.userRepository.findByEmail(email);
-        if (existingUser) {
-            throw new Error('Email is already registered');
-        }
+    async registerUser({ firebaseUid, name, email, university }) {
+    const existingUser = await this.userRepository.findById(firebaseUid);
+    if (existingUser) throw new Error('User already exists');
 
-        const id = crypto.randomUUID();
-        const newUser = new User(id, name, email, password, 5.0, university);
-
-        return await this.userRepository.save(newUser);
+    const newUser = new User(firebaseUid, name, email, null, 5.0, university);
+    return await this.userRepository.save(newUser);
     }
 
     async getUserById(id) {
